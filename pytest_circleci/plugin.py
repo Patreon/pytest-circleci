@@ -1,5 +1,5 @@
 
-import os, hashlib
+import os, hashlib, pytest
 
 
 class CircleCIError(Exception):
@@ -23,6 +23,7 @@ def pytest_report_header(config):
     return "CircleCI total nodes: {}, this node index: {}".format(circle_node_total, circle_node_index)
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(session, config, items):
     """
     Use CircleCI env vars to determine which tests to run
