@@ -14,6 +14,9 @@ setup(
     author_email="mick@twomeylee.name",
     url="https://github.com/micktwomey/pytest-circleci",
     packages=["pytest_circleci"],
+    install_requires=[
+        'pytest',
+    ],
     entry_points={
         'pytest11': [
             'circleci = pytest_circleci.plugin'
