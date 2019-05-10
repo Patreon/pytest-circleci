@@ -42,9 +42,12 @@ def pytest_collection_modifyitems(session, config, items):
         hashed_items[index] = (item_hash, item)
     hashed_items.sort(key=lambda i: i[0])
     chunk_size = len(hashed_items) / circle_node_total
-    deselected = [item
-                  for (_, item)
-                  in hashed_items[math.ceil(chunk_size * circle_node_index):math.ceil(chunk_size * (circle_node_index+))]]
-    for item in deselected:
-        items.remove(item)
-    config.hook.pytest_deselected(items=deselected)
+    for i in range(circle_node_total):
+        if i == circle_node_index:
+            continue
+        deselected = [item
+                    for (_, item)
+                    in hashed_items[math.ceil(chunk_size * i):math.ceil(chunk_size * (i+1))]]
+        for item in deselected:
+            items.remove(item)
+        config.hook.pytest_deselected(items=deselected)
