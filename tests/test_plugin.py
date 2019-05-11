@@ -23,7 +23,7 @@ def test_first_container(read_circleci_env_variables_mock, hashlib):
 
     pytest_collection_modifyitems('session', config, items)
 
-    config.hook.pytest_deselected.assert_called_with(items=[item1, item3])
+    config.hook.pytest_deselected.assert_called_with(items=[item3, item4])
 
 
 @mock.patch('pytest_circleci.plugin.hashlib')
@@ -42,4 +42,4 @@ def test_second_container(read_circleci_env_variables_mock, hashlib):
 
     pytest_collection_modifyitems('session', config, items)
 
-    config.hook.pytest_deselected.assert_called_with(items=[item2, item4])
+    config.hook.pytest_deselected.assert_called_with(items=[item1, item2])
