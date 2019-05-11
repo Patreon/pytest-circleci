@@ -23,6 +23,10 @@ def pytest_report_header(config):
     return "CircleCI total nodes: {}, this node index: {}".format(circle_node_total, circle_node_index)
 
 
+def _hash_item(item):
+    item_location = ':'.join(map(str, item.location)).encode('utf-8')
+    return int(hashlib.sha1(item_location).hexdigest(), 16)
+
 @pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(session, config, items):
     """
@@ -35,19 +39,17 @@ def pytest_collection_modifyitems(session, config, items):
 
     """
     circle_node_total, circle_node_index = read_circleci_env_variables()
-    hashed_items = []
-    for index, item in enumerate(list(items)):
-        item_location = ':'.join(map(str, item.location)).encode('utf-8')
-        item_hash = int(hashlib.sha1(item_location).hexdigest(), 16)
-        hashed_items[index] = (item_hash, item)
+    hashed_items = [(_hash_item(item), item) for item in list(items)]
     hashed_items.sort(key=lambda i: i[0])
     chunk_size = len(hashed_items) / circle_node_total
+    deselected = []
     for i in range(circle_node_total):
         if i == circle_node_index:
             continue
-        deselected = [item
-                    for (_, item)
-                    in hashed_items[math.ceil(chunk_size * i):math.ceil(chunk_size * (i+1))]]
-        for item in deselected:
-            items.remove(item)
-        config.hook.pytest_deselected(items=deselected)
+        chunk = [item
+                for (_, item)
+                in hashed_items[math.ceil(chunk_size * i):math.ceil(chunk_size * (i+1))]]
+        deselected.extend(chunk)
+    for item in deselected:
+        items.remove(item)
+    config.hook.pytest_deselected(items=deselected)
