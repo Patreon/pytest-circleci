@@ -1,5 +1,5 @@
 
-import os, hashlib
+import os, hashlib, pytest, math
 
 
 class CircleCIError(Exception):
@@ -23,6 +23,11 @@ def pytest_report_header(config):
     return "CircleCI total nodes: {}, this node index: {}".format(circle_node_total, circle_node_index)
 
 
+def _hash_item(item):
+    item_location = ':'.join(map(str, item.location)).encode('utf-8')
+    return int(hashlib.sha1(item_location).hexdigest(), 16)
+
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(session, config, items):
     """
     Use CircleCI env vars to determine which tests to run
@@ -34,11 +39,11 @@ def pytest_collection_modifyitems(session, config, items):
 
     """
     circle_node_total, circle_node_index = read_circleci_env_variables()
+    hashed_items = [(_hash_item(item), item) for item in list(items)]
+    hashed_items.sort(key=lambda i: i[0])
     deselected = []
-    for index, item in enumerate(list(items)):
-        item_location = ':'.join(map(str, item.location)).encode('utf-8')
-        item_hash = int(hashlib.sha1(item_location).hexdigest(), 16)
-        if (item_hash % circle_node_total) != circle_node_index:
+    for index, (_, item) in enumerate(hashed_items):
+        if (index % circle_node_total) != circle_node_index:
             deselected.append(item)
             items.remove(item)
     config.hook.pytest_deselected(items=deselected)
