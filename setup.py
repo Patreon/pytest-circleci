@@ -5,7 +5,7 @@ from setuptools import setup
 from pytest_circleci import __version__
 
 setup(
-    name="pytest-circleci",
+    name="patreon-pytest-circleci",
     version=__version__,
     description="py.test plugin for CircleCI",
     long_description = textwrap.dedent("""
@@ -19,7 +19,7 @@ setup(
     """),
     author="Michael Twomey",
     author_email="mick@twomeylee.name",
-    url="https://github.com/micktwomey/pytest-circleci",
+    url="https://github.com/Patreon/pytest-circlci",
     packages=["pytest_circleci"],
     install_requires=[
         'pytest',
