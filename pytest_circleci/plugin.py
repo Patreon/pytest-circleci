@@ -41,15 +41,9 @@ def pytest_collection_modifyitems(session, config, items):
     circle_node_total, circle_node_index = read_circleci_env_variables()
     hashed_items = [(_hash_item(item), item) for item in list(items)]
     hashed_items.sort(key=lambda i: i[0])
-    chunk_size = len(hashed_items) / circle_node_total
     deselected = []
-    for i in range(circle_node_total):
-        if i == circle_node_index:
-            continue
-        chunk = [item
-                for (_, item)
-                in hashed_items[math.ceil(chunk_size * i):math.ceil(chunk_size * (i+1))]]
-        deselected.extend(chunk)
-    for item in deselected:
-        items.remove(item)
+    for index, (_, item) in enumerate(hashed_items):
+        if (index % circle_node_total) != circle_node_index:
+            deselected.append(item)
+            items.remove(item)
     config.hook.pytest_deselected(items=deselected)
